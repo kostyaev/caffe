@@ -10,6 +10,11 @@
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/rng.hpp"
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
 namespace caffe {
 
 template<typename Dtype>
@@ -223,9 +228,16 @@ void DataTransformer<Dtype>::Transform(const vector<cv::Mat> & mat_vector,
 }
 
 template<typename Dtype>
-void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
+void DataTransformer<Dtype>::Transform(const cv::Mat& img,
                                        Blob<Dtype>* transformed_blob) {
+  cv::Mat cv_img;
+  img.copyTo(cv_img);
   const int crop_size = param_.crop_size();
+  const bool contrast_adjustment = param_.contrast_adjustment();
+  const bool smooth_filtering = param_.smooth_filtering();
+  const bool jpeg_compression = param_.jpeg_compression();
+  const float rotation_angle_interval = param_.rotation_angle_interval();
+
   const int img_channels = cv_img.channels();
   const int img_height = cv_img.rows;
   const int img_width = cv_img.cols;
@@ -251,6 +263,120 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
   CHECK_GT(img_channels, 0);
   CHECK_GE(img_height, crop_size);
   CHECK_GE(img_width, crop_size);
+
+
+    // Flipping and Reflection -----------------------------------------------------------------
+  int flipping_mode = (Rand(4)) - 1; // -1, 0, 1, 2
+  bool apply_flipping = (flipping_mode != 2);
+  if (apply_flipping) {
+    cv::flip(cv_img,cv_img,flipping_mode);
+  }
+
+  // Smooth Filtering -------------------------------------------------------------
+  int smooth_param1 = 3;
+  int apply_smooth = Rand(2);
+  if ( smooth_filtering && apply_smooth ) {
+  int smooth_type = Rand(4); // see opencv_util.hpp
+  smooth_param1 = 3 + 2*(Rand(1));
+        switch(smooth_type){
+        case 0:
+     //cv::Smooth(cv_img, cv_img, smooth_type, smooth_param1);
+     cv::GaussianBlur(cv_img, cv_img, cv::Size(smooth_param1,smooth_param1),0);
+           break;
+        case 1:
+           cv::blur(cv_img, cv_img, cv::Size(smooth_param1,smooth_param1));
+           break;
+        case 2:
+           cv::medianBlur(cv_img, cv_img, smooth_param1);
+           break;
+        case 3:
+           cv::boxFilter(cv_img, cv_img, -1, cv::Size(smooth_param1*2,smooth_param1*2));
+           break;
+        }
+  if (display && phase_ == TRAIN)
+      cv::imshow("Smooth Filtering", cv_img);
+  }
+  cv::RNG rng;
+  // Contrast and Brightness Adjuestment ----------------------------------------
+  float alpha = 1, beta = 0;
+  int apply_contrast = Rand(2);
+  if ( contrast_adjustment && apply_contrast ) {
+    float min_alpha = 0.8, max_alpha = 1.2;
+    alpha = rng.uniform(min_alpha, max_alpha);
+    beta = (float)(Rand(6));
+  // flip sign
+  if ( Rand(2) ) beta = - beta;
+    cv_img.convertTo(cv_img, -1 , alpha, beta);
+  if (display && phase_ == TRAIN)
+        cv::imshow("Contrast Adjustment", cv_img);
+  }
+
+  // JPEG Compression -------------------------------------------------------------
+  // DO NOT use the following code as there is some memory leak which I cann't figure out
+  int QF = 100;
+  int apply_JPEG = Rand(2);
+  if ( jpeg_compression && apply_JPEG ) {
+  // JPEG quality factor
+  QF = 95 + 1 * (Rand(6));
+        int cp[] = {1, QF};
+  vector<int> compression_params(cp,cp + 2);
+        vector<unsigned char> img_jpeg;
+  //cv::imencode(".jpg", cv_img, img_jpeg);
+        cv::imencode(".jpg", cv_img, img_jpeg, compression_params);
+  cv::Mat temp = cv::imdecode(img_jpeg, 1);
+        temp.copyTo(cv_img);
+  if (display && phase_ == TRAIN)
+      cv::imshow("JPEG Compression", cv_img);
+  }
+
+  // Cropping -------------------------------------------------------------
+  int h_off = 0;
+  int w_off = 0;
+  cv::Mat cv_cropped_img = cv_img;
+  if (crop_size) {
+    CHECK_EQ(crop_size, height);
+    CHECK_EQ(crop_size, width);
+    // We only do random crop when we do training.
+    if (phase_ == TRAIN) {
+      h_off = Rand(img_height - crop_size + 1);
+      w_off = Rand(img_width - crop_size + 1);
+    } else {
+      h_off = (img_height - crop_size) / 2;
+      w_off = (img_width - crop_size) / 2;
+    }
+    cv::Rect roi(w_off, h_off, crop_size, crop_size);
+    cv_cropped_img = cv_img(roi);
+    if (display && phase_ == TRAIN)
+      cv::imshow("Cropping", cv_cropped_img);
+  } else {
+    CHECK_EQ(img_height, height);
+    CHECK_EQ(img_width, width);
+  }
+
+
+  // Rotation -------------------------------------------------------------
+  double rotation_degree;
+  if ( rotation_angle_interval!=1 ) {
+  cv::Mat dst;
+  int interval = 360/rotation_angle_interval;
+  int apply_rotation = Rand(interval);
+
+  cv::Size dsize = cv::Size(cv_cropped_img.cols*1.5,cv_cropped_img.rows*1.5);
+  cv::Mat resize_img = cv::Mat(dsize,CV_32S);
+  cv::resize(cv_cropped_img, resize_img,dsize);
+
+  cv::Point2f pt(resize_img.cols/2., resize_img.rows/2.);    
+  rotation_degree = apply_rotation*rotation_angle_interval;
+  cv::Mat r = getRotationMatrix2D(pt, rotation_degree, 1.0);
+  warpAffine(resize_img, dst, r, cv::Size(resize_img.cols, resize_img.rows));
+
+
+  cv::Rect myROI(resize_img.cols/6, resize_img.rows/6, cv_cropped_img.cols, cv_cropped_img.rows);
+  cv::Mat crop_after_rotate = dst(myROI);
+  
+
+  crop_after_rotate.copyTo(cv_img);
+  }
 
   Dtype* mean = NULL;
   if (has_mean_file) {
