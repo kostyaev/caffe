@@ -228,10 +228,8 @@ void DataTransformer<Dtype>::Transform(const vector<cv::Mat> & mat_vector,
 }
 
 template<typename Dtype>
-void DataTransformer<Dtype>::Transform(const cv::Mat& img,
+void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
                                        Blob<Dtype>* transformed_blob) {
-  cv::Mat cv_img;
-  img.copyTo(cv_img);
   const int crop_size = param_.crop_size();
   const bool contrast_adjustment = param_.contrast_adjustment();
   const bool smooth_filtering = param_.smooth_filtering();
@@ -306,23 +304,6 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
   if ( Rand(2) ) beta = - beta;
     cv_img.convertTo(cv_img, -1 , alpha, beta);
   
-  }
-
-  // JPEG Compression -------------------------------------------------------------
-  // DO NOT use the following code as there is some memory leak which I cann't figure out
-  int QF = 100;
-  int apply_JPEG = Rand(2);
-  if ( jpeg_compression && apply_JPEG ) {
-  // JPEG quality factor
-  QF = 95 + 1 * (Rand(6));
-        int cp[] = {1, QF};
-  vector<int> compression_params(cp,cp + 2);
-        vector<unsigned char> img_jpeg;
-  //cv::imencode(".jpg", cv_img, img_jpeg);
-        cv::imencode(".jpg", cv_img, img_jpeg, compression_params);
-  cv::Mat temp = cv::imdecode(img_jpeg, 1);
-        temp.copyTo(cv_img);
-
   }
 
   // Cropping -------------------------------------------------------------
