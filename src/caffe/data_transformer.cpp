@@ -293,9 +293,6 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
            cv::boxFilter(cv_img, cv_img, -1, cv::Size(smooth_param1*2,smooth_param1*2));
            break;
         }
-  if (display && phase_ == TRAIN)
-      cv::imshow("Smooth Filtering", cv_img);
-  }
   cv::RNG rng;
   // Contrast and Brightness Adjuestment ----------------------------------------
   float alpha = 1, beta = 0;
@@ -307,9 +304,6 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
   // flip sign
   if ( Rand(2) ) beta = - beta;
     cv_img.convertTo(cv_img, -1 , alpha, beta);
-  if (display && phase_ == TRAIN)
-        cv::imshow("Contrast Adjustment", cv_img);
-  }
 
   // JPEG Compression -------------------------------------------------------------
   // DO NOT use the following code as there is some memory leak which I cann't figure out
@@ -325,9 +319,6 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
         cv::imencode(".jpg", cv_img, img_jpeg, compression_params);
   cv::Mat temp = cv::imdecode(img_jpeg, 1);
         temp.copyTo(cv_img);
-  if (display && phase_ == TRAIN)
-      cv::imshow("JPEG Compression", cv_img);
-  }
 
   // Cropping -------------------------------------------------------------
   int h_off = 0;
@@ -346,8 +337,7 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
     }
     cv::Rect roi(w_off, h_off, crop_size, crop_size);
     cv_cropped_img = cv_img(roi);
-    if (display && phase_ == TRAIN)
-      cv::imshow("Cropping", cv_cropped_img);
+
   } else {
     CHECK_EQ(img_height, height);
     CHECK_EQ(img_width, width);

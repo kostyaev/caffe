@@ -433,7 +433,6 @@ message TransformationParameter {
   optional bool contrast_adjustment = 11 [default = false];
   optional bool smooth_filtering = 12 [default = false];
   optional bool jpeg_compression = 13 [default = false];
-  optional bool display = 14 [default = false];
 }
 
 // Message that stores parameters shared by loss layers
