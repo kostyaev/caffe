@@ -228,7 +228,7 @@ void DataTransformer<Dtype>::Transform(const vector<cv::Mat> & mat_vector,
 }
 
 
-void rotate(const cv::Mat& src, int angle) {
+void rotate(cv::Mat& src, int angle) {
     // get rotation matrix for rotating the image around its center
     cv::Point2f center(src.cols / 2.0, src.rows / 2.0);
     cv::Mat rot = cv::getRotationMatrix2D(center, angle, 1.0);
@@ -241,7 +241,7 @@ void rotate(const cv::Mat& src, int angle) {
 }
 
 
-void crop(const cv::Mat& cv_img, int crop_size) {
+void crop(cv::Mat& cv_img, int crop_size) {
     int h_off = 0;
     int w_off = 0;
     const int img_height = cv_img.rows;
@@ -252,7 +252,7 @@ void crop(const cv::Mat& cv_img, int crop_size) {
     cv_img = cv_img(roi);
 }
 
-void resize(const cv::Mat&, int smallest_side) {
+void resize(cv::Mat& cv_img, int smallest_side) {
     int cur_width = cv_img.cols;
     int cur_rows = cv_img.rows;
     cv::Size dsize;
@@ -269,7 +269,7 @@ void resize(const cv::Mat&, int smallest_side) {
     cv::resize(cv_img, cv_img, dsize);
 }
 
-void smooth(const cv::Mat& image) {
+void smooth(cv::Mat& image) {
     int smooth_type = Rand(4);
     int smooth_param = 3 + 2 * (Rand(1));
     switch (smooth_type) {
@@ -291,7 +291,7 @@ void smooth(const cv::Mat& image) {
     }
 }
 
-void adjust_contrast(const cv::Mat& image) {
+void adjust_contrast(cv::Mat& image) {
     cv::RNG rng;
     float alpha = 1, beta = 0;
     float min_alpha = 0.8, max_alpha = 1.2;
@@ -304,7 +304,7 @@ void adjust_contrast(const cv::Mat& image) {
 }
 
 template<typename Dtype>
-void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
+void DataTransformer<Dtype>::Transform(const cv::Mat& img,
                                        Blob<Dtype>* transformed_blob) {
   const int min_side = param_.min_side();
   const int crop_size = param_.crop_size();
@@ -322,6 +322,8 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
   const bool do_mirror = param_.mirror() && Rand(2);
   const bool has_mean_file = param_.has_mean_file();
   const bool has_mean_values = mean_values_.size() > 0;
+
+  cv::Mat cv_img = img;
 
   //resizing and crop according to min side, preserving aspect ratio
   if (min_side) {
