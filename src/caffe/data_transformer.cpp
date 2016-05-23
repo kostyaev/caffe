@@ -227,7 +227,6 @@ void DataTransformer<Dtype>::Transform(const vector<cv::Mat> & mat_vector,
   }
 }
 
-
 void rotate(cv::Mat& src, int angle) {
     // get rotation matrix for rotating the image around its center
     cv::Point2f center(src.cols / 2.0, src.rows / 2.0);
@@ -239,7 +238,6 @@ void rotate(cv::Mat& src, int angle) {
     rot.at<double>(1, 2) += bbox.height / 2.0 - center.y;
     cv::warpAffine(src, src, rot, bbox.size());
 }
-
 
 void crop(cv::Mat& cv_img, int crop_size) {
     int h_off = 0;
@@ -269,39 +267,6 @@ void resize(cv::Mat& cv_img, int smallest_side) {
     cv::resize(cv_img, cv_img, dsize);
 }
 
-template<typename Dtype> void smooth(cv::Mat& image) {
-    int smooth_type = Rand(4);
-    int smooth_param = 3 + 2 * (Rand(1));
-    switch (smooth_type) {
-        case 0:
-            //cv::Smooth(image, image, smooth_type, smooth_param1);
-            cv::GaussianBlur(image, image, cv::Size(smooth_param, smooth_param), 0);
-            break;
-        case 1:
-            cv::blur(image, image, cv::Size(smooth_param, smooth_param));
-            break;
-        case 2:
-            cv::medianBlur(image, image, smooth_param);
-            break;
-        case 3:
-            cv::boxFilter(image, image, -1, cv::Size(smooth_param * 2, smooth_param * 2));
-            break;
-        default:
-            break;
-    }
-}
-
-template<typename Dtype> void adjust_contrast(cv::Mat& image) {
-    cv::RNG rng;
-    float alpha = 1, beta = 0;
-    float min_alpha = 0.8, max_alpha = 1.2;
-    alpha = rng.uniform(min_alpha, max_alpha);
-    beta = (float) Rand(6);
-
-    // flip sign
-    if (Rand(2)) beta = -beta;
-    image.convertTo(image, -1, alpha, beta);
-}
 
 template<typename Dtype>
 void DataTransformer<Dtype>::Transform(const cv::Mat& img,
@@ -338,11 +303,39 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
       rotate(cv_img, current_angle);
 
     // adjust contrast
-    if (contrast_adjustment)
-      adjust_contrast(cv_img);
+    if (contrast_adjustment){
+        cv::RNG rng;
+        float alpha = 1, beta = 0;
+        float min_alpha = 0.8, max_alpha = 1.2;
+        alpha = rng.uniform(min_alpha, max_alpha);
+        beta = (float) Rand(6);
+    
+        // flip sign
+        if (Rand(2)) beta = -beta;
+        cv_img.convertTo(cv_img, -1, alpha, beta);
+    }
 
-    if (smooth_filtering)
-      smooth(cv_img);
+    if (smooth_filtering) {
+      int smooth_type = Rand(4);
+      int smooth_param = 3 + 2 * (Rand(1));
+      switch (smooth_type) {
+          case 0:
+              //cv::Smooth(cv_img, cv_img, smooth_type, smooth_param1);
+              cv::GaussianBlur(cv_img, cv_img, cv::Size(smooth_param, smooth_param), 0);
+              break;
+          case 1:
+              cv::blur(cv_img, cv_img, cv::Size(smooth_param, smooth_param));
+              break;
+          case 2:
+              cv::medianBlur(cv_img, cv_img, smooth_param);
+              break;
+          case 3:
+              cv::boxFilter(cv_img, cv_img, -1, cv::Size(smooth_param * 2, smooth_param * 2));
+              break;
+          default:
+              break;
+      }
+    }
   }
 
   const int img_channels = cv_img.channels();
