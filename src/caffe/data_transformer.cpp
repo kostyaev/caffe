@@ -299,11 +299,11 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
   if (phase_ == TRAIN) {
     int current_angle = Rand(rotation_angle + 1);
     // rotate
-    if (current_angle)
+    if (rotation_angle && current_angle)
       rotate(cv_img, current_angle);
 
     // adjust contrast
-    if (contrast_adjustment){
+    if (contrast_adjustment && Rand(2)){
         cv::RNG rng;
         float alpha = 1, beta = 0;
         float min_alpha = 0.8, max_alpha = 1.2;
@@ -315,7 +315,7 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
         cv_img.convertTo(cv_img, -1, alpha, beta);
     }
 
-    if (smooth_filtering) {
+    if (smooth_filtering && Rand(2)) {
       int smooth_type = Rand(4);
       int smooth_param = 3 + 2 * (Rand(1));
       switch (smooth_type) {
