@@ -228,7 +228,7 @@ void DataTransformer<Dtype>::Transform(const vector<cv::Mat> & mat_vector,
 }
 
 
-void rotate(cv::Mat& src, int angle) {
+void rotate(const cv::Mat& src, int angle) {
     // get rotation matrix for rotating the image around its center
     cv::Point2f center(src.cols / 2.0, src.rows / 2.0);
     cv::Mat rot = cv::getRotationMatrix2D(center, angle, 1.0);
@@ -241,19 +241,18 @@ void rotate(cv::Mat& src, int angle) {
 }
 
 
-void crop(cv::Mat& cv_img, int crop_size) {
+void crop(const cv::Mat& cv_img, int crop_size) {
     int h_off = 0;
     int w_off = 0;
     const int img_height = cv_img.rows;
     const int img_width = cv_img.cols;
-    h_off = Rand(img_height - crop_size + 1);
-    w_off = Rand(img_width - crop_size + 1);
-
+    h_off = (img_height - crop_size) / 2;
+    w_off = (img_width - crop_size) / 2;
     cv::Rect roi(w_off, h_off, crop_size, crop_size);
     cv_img = cv_img(roi);
 }
 
-void resize(cv::Mat &cv_img, int smallest_side) {
+void resize(const cv::Mat&, int smallest_side) {
     int cur_width = cv_img.cols;
     int cur_rows = cv_img.rows;
     cv::Size dsize;
@@ -270,7 +269,7 @@ void resize(cv::Mat &cv_img, int smallest_side) {
     cv::resize(cv_img, cv_img, dsize);
 }
 
-void smooth(cv::Mat &image) {
+void smooth(const cv::Mat& image) {
     int smooth_type = Rand(4);
     int smooth_param = 3 + 2 * (Rand(1));
     switch (smooth_type) {
@@ -292,12 +291,12 @@ void smooth(cv::Mat &image) {
     }
 }
 
-void adjust_contrast(cv::Mat& image) {
+void adjust_contrast(const cv::Mat& image) {
     cv::RNG rng;
     float alpha = 1, beta = 0;
     float min_alpha = 0.8, max_alpha = 1.2;
     alpha = rng.uniform(min_alpha, max_alpha);
-    beta = (float) (Rand(6));
+    beta = (float) Rand(6);
 
     // flip sign
     if (Rand(2)) beta = -beta;
