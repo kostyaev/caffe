@@ -269,7 +269,7 @@ void resize(cv::Mat& cv_img, int smallest_side) {
     cv::resize(cv_img, cv_img, dsize);
 }
 
-void smooth(cv::Mat& image) {
+template<typename Dtype> void smooth(cv::Mat& image) {
     int smooth_type = Rand(4);
     int smooth_param = 3 + 2 * (Rand(1));
     switch (smooth_type) {
@@ -291,7 +291,7 @@ void smooth(cv::Mat& image) {
     }
 }
 
-void adjust_contrast(cv::Mat& image) {
+template<typename Dtype> void adjust_contrast(cv::Mat& image) {
     cv::RNG rng;
     float alpha = 1, beta = 0;
     float min_alpha = 0.8, max_alpha = 1.2;
@@ -332,7 +332,7 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
   }
 
   if (phase_ == TRAIN) {
-    int current_angle = Rand(rotation_angle + 1)
+    int current_angle = Rand(rotation_angle + 1);
     // rotate
     if (current_angle)
       rotate(cv_img, current_angle);
