@@ -428,11 +428,10 @@ message TransformationParameter {
   //Specify the range of scaling factor for doing resizing
   optional float min_scaling_factor = 8 [default = 0.75];
   optional float max_scaling_factor = 9 [default = 1.50];
-  // Specify the angle interval for doing rotation
-  optional float rotation_angle_interval = 10 [default = 1];
+  optional float rotation_angle = 10 [default = 0];
   optional bool contrast_adjustment = 11 [default = false];
   optional bool smooth_filtering = 12 [default = false];
-  optional bool jpeg_compression = 13 [default = false];
+  optional float min_side = 13 [default = 0];
 }
 
 // Message that stores parameters shared by loss layers
