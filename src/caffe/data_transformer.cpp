@@ -251,7 +251,7 @@ void crop(cv::Mat& cv_img, int crop_size) {
     cv_img = cv_img(roi);
 }
 
-void crop(Mat& cv_img, int w, int h, bool is_center) {
+void crop(cv::Mat& cv_img, int w, int h, bool is_center) {
     int h_off = 0;
     int w_off = 0;
     const int img_height = cv_img.rows;
