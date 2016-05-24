@@ -363,10 +363,8 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
     // adjust contrast
     if (contrast_adjustment && Rand(2)){
         cv::RNG rng;
-        float beta = 0;
-        alpha = rng.uniform(min_alpha, max_alpha);
-        beta = (float) Rand(6);
-    
+        float alpha = rng.uniform(min_alpha, max_alpha);
+        float beta = (float) Rand(6);
         // flip sign
         if (Rand(2)) beta = -beta;
         cv_img.convertTo(cv_img, -1, alpha, beta);
