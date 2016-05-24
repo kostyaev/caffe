@@ -302,6 +302,8 @@ void rotate_crop(cv::Mat& img, int degrees){
 
     double sin_a = abs(sin(angle));
     double cos_a = abs(cos(angle));
+    printf("sin: %f", sin_a);
+    printf("cos: %f", cos_a);
     double wr, hr = 0;
     if (side_short <= 2.*sin_a*cos_a*side_long) {
         double x = 0.5*side_short;
@@ -320,6 +322,7 @@ void rotate_crop(cv::Mat& img, int degrees){
         hr = (h*cos_a - w*sin_a)/cos_2a;
     }
     rotate(img, degrees);
+    printf("wr %f, hr %f", wr, hr);
     crop_center(img, (int)wr, (int)hr);
 }
 
