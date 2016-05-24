@@ -251,6 +251,23 @@ void crop(cv::Mat& cv_img, int crop_size) {
     cv_img = cv_img(roi);
 }
 
+void crop(Mat& cv_img, int w, int h, bool is_center) {
+    int h_off = 0;
+    int w_off = 0;
+    const int img_height = cv_img.rows;
+    const int img_width = cv_img.cols;
+    if (!is_center) {
+        h_off = Rand(img_height - h + 1);
+        w_off = Rand(img_width - w + 1);
+    } else {
+        h_off = (img_height - h) / 2;
+        w_off = (img_width - w) / 2;
+    }
+
+    cv::Rect roi(w_off, h_off, w, h);
+    cv_img = cv_img(roi);
+}
+
 void resize(cv::Mat& cv_img, int smallest_side) {
     int cur_width = cv_img.cols;
     int cur_rows = cv_img.rows;
