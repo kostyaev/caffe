@@ -242,7 +242,6 @@ void rotate(cv::Mat& src, int angle) {
 }
 
 void crop(cv::Mat& cv_img, int crop_size) {
-    printf("standart crop, crop size: %d", crop_size);
     int h_off = 0;
     int w_off = 0;
     const int img_height = cv_img.rows;
@@ -260,7 +259,6 @@ void crop_center(cv::Mat& cv_img, int w, int h) {
     const int img_width = cv_img.cols;
     h_off = (img_height - h) / 2;
     w_off = (img_width - w) / 2;
-    printf("center crop, w: %d  h: %d w_off: %d h_off: %d", w, h, w_off, h_off);
     cv::Rect roi(w_off, h_off, w, h);
     cv_img = cv_img(roi);
 }
@@ -298,12 +296,8 @@ void rotate_crop(cv::Mat& img, int degrees){
         side_long = h;
         side_short = w;
     }
-
-    printf("angle %f", angle);
     double sin_a = fabs(sin(angle));
-    printf("sin abs: %f", sin_a);
     double cos_a = fabs(cos(angle));
-    printf("cos: %f", cos_a);
     double wr, hr = 0;
     if (side_short <= 2.*sin_a*cos_a*side_long) {
         double x = 0.5*side_short;
@@ -322,7 +316,6 @@ void rotate_crop(cv::Mat& img, int degrees){
         hr = (h*cos_a - w*sin_a)/cos_2a;
     }
     rotate(img, degrees);
-    printf("wr %f, hr %f", wr, hr);
     crop_center(img, (int)wr, (int)hr);
 }
 
