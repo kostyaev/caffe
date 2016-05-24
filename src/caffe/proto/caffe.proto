@@ -434,8 +434,7 @@ message TransformationParameter {
   optional float min_side = 13 [default = 0];
   optional float min_alpha = 14 [default = 0.8];
   optional float max_alpha = 15 [default = 1.2];
-  optional float min_smooth = 16 [default = 3];
-  optional float max_smooth = 17 [default = 6];
+  optional float max_smooth = 16 [default = 6];
 }
 
 // Message that stores parameters shared by loss layers

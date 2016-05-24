@@ -330,7 +330,6 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
   const float rotation_angle = param_.rotation_angle();
   const float min_alpha = param_.min_alpha();
   const float max_alpha = param_.max_alpha();
-  const float min_smooth = param_.min_smooth();
   const float max_smooth = param_.max_smooth();
 
   // Check dimensions.
@@ -370,9 +369,9 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
         cv_img.convertTo(cv_img, -1, alpha, beta);
     }
 
-    if (smooth_filtering && Rand(2)) {
+    if (smooth_filtering && Rand(2) && max_smooth > 1) {
       int smooth_type = Rand(4);
-      int smooth_param = min_smooth + Rand(max_smooth - min_smooth + 1);
+      int smooth_param = 1 + 2 * Rand(max_smooth/2);
       switch (smooth_type) {
           case 0:
               //cv::Smooth(cv_img, cv_img, smooth_type, smooth_param1);
