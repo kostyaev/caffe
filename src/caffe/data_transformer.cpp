@@ -284,7 +284,6 @@ void resize(cv::Mat& cv_img, int smallest_side) {
 
 void rotate_crop(cv::Mat& img, int degrees){
     double angle = degrees * (PI / 180.0);
-    printf("pi %f", PI);
     int w = img.cols;
     int h = img.rows;
     if (w <= 0 || h <= 0)
@@ -301,11 +300,9 @@ void rotate_crop(cv::Mat& img, int degrees){
     }
 
     printf("angle %f", angle);
-    double sin_a = sin(angle);
-    printf("sin: %f", sin_a);
+    double sin_a = fabs(sin(angle));
     printf("sin abs: %f", sin_a);
-    sin_a = abs(sin_a);
-    double cos_a = abs(cos(angle));
+    double cos_a = fabs(cos(angle));
     printf("cos: %f", cos_a);
     double wr, hr = 0;
     if (side_short <= 2.*sin_a*cos_a*side_long) {
@@ -353,7 +350,7 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
   cv::Mat cv_img = img;
 
   if (phase_ == TRAIN) {
-    int current_angle = Rand(rotation_angle + 1);
+    int current_angle = Rand(rotation_angle*2 + 1) - rotation_angle;
     // rotate
     if (rotation_angle && current_angle)
       rotate_crop(cv_img, current_angle);
