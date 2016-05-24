@@ -285,7 +285,6 @@ void resize(cv::Mat& cv_img, int smallest_side) {
 void rotate_crop(cv::Mat& img, int degrees){
     double angle = degrees * (PI / 180.0);
     printf("pi %f", PI);
-    printf("angle %f", angle);
     int w = img.cols;
     int h = img.rows;
     if (w <= 0 || h <= 0)
@@ -301,9 +300,12 @@ void rotate_crop(cv::Mat& img, int degrees){
         side_short = w;
     }
 
-    double sin_a = abs(sin(angle));
-    double cos_a = abs(cos(angle));
+    printf("angle %f", angle);
+    double sin_a = sin(angle);
     printf("sin: %f", sin_a);
+    printf("sin abs: %f", sin_a);
+    sin_a = abs(sin_a)
+    double cos_a = abs(cos(angle));
     printf("cos: %f", cos_a);
     double wr, hr = 0;
     if (side_short <= 2.*sin_a*cos_a*side_long) {
