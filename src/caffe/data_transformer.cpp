@@ -14,6 +14,7 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#define PI 3.14159265358979323846
 
 namespace caffe {
 
@@ -267,6 +268,46 @@ void resize(cv::Mat& cv_img, int smallest_side) {
     cv::resize(cv_img, cv_img, dsize);
 }
 
+void rotate_crop(Mat& img, int degrees){
+    double angle = degrees * (PI / 180.0);
+    int w = img.cols;
+    int h = img.rows;
+    if (w <= 0 || h <= 0)
+        return ;
+
+    bool width_is_longer = w >= h;
+    double side_long, side_short;
+    if (width_is_longer) {
+        side_long = w;
+        side_short = h;
+    } else {
+        side_long = h;
+        side_short = w;
+    }
+
+    double sin_a = abs(sin(angle));
+    double cos_a = abs(cos(angle));
+    double wr, hr = 0;
+    if (side_short <= 2.*sin_a*cos_a*side_long) {
+        double x = 0.5*side_short;
+        if (width_is_longer) {
+            wr = x/sin_a;
+            hr = x/cos_a;
+        } else {
+            wr = x/cos_a;
+            hr = x/sin_a;
+        }
+
+    }
+    else {
+        double cos_2a = cos_a*cos_a - sin_a*sin_a;
+        wr = (w*cos_a - h*sin_a)/cos_2a;
+        hr = (h*cos_a - w*sin_a)/cos_2a;
+    }
+    rotate(img, degrees);
+    crop(img, wr, hr, true);
+}
+
 
 template<typename Dtype>
 void DataTransformer<Dtype>::Transform(const cv::Mat& img,
@@ -290,6 +331,13 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
 
   cv::Mat cv_img = img;
 
+  if (phase_ == TRAIN) {
+    int current_angle = Rand(rotation_angle + 1);
+    // rotate
+    if (rotation_angle && current_angle)
+      rotate_crop(cv_img, current_angle);
+  }
+
   //resizing and crop according to min side, preserving aspect ratio
   if (min_side) {
      resize(cv_img, min_side);
@@ -297,11 +345,6 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
   }
 
   if (phase_ == TRAIN) {
-    int current_angle = Rand(rotation_angle + 1);
-    // rotate
-    if (rotation_angle && current_angle)
-      rotate(cv_img, current_angle);
-
     // adjust contrast
     if (contrast_adjustment && Rand(2)){
         cv::RNG rng;
