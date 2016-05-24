@@ -259,7 +259,7 @@ void crop_center(cv::Mat& cv_img, int w, int h) {
     const int img_width = cv_img.cols;
     h_off = (img_height - h) / 2;
     w_off = (img_width - w) / 2;
-    printf("center crop, w: %d h: %d", w_off, h_off);
+    printf("center crop, w: %d  h: %d w_off: %d h_off: %d", w, h, w_off, h_off);
     cv::Rect roi(w_off, h_off, w, h);
     cv_img = cv_img(roi);
 }
@@ -283,6 +283,7 @@ void resize(cv::Mat& cv_img, int smallest_side) {
 
 void rotate_crop(cv::Mat& img, int degrees){
     double angle = degrees * (PI / 180.0);
+    printf("angle %d", angle);
     int w = img.cols;
     int h = img.rows;
     if (w <= 0 || h <= 0)
