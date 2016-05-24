@@ -328,6 +328,10 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
   const bool contrast_adjustment = param_.contrast_adjustment();
   const bool smooth_filtering = param_.smooth_filtering();
   const float rotation_angle = param_.rotation_angle();
+  const float min_alpha = param_.min_alpha();
+  const float max_alpha = param_.max_alpha();
+  const float min_smooth = param_.min_smooth();
+  const float max_smooth = param_.max_smooth();
 
   // Check dimensions.
   const int channels = transformed_blob->channels();
@@ -359,8 +363,7 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
     // adjust contrast
     if (contrast_adjustment && Rand(2)){
         cv::RNG rng;
-        float alpha = 1, beta = 0;
-        float min_alpha = 0.8, max_alpha = 1.2;
+        float beta = 0;
         alpha = rng.uniform(min_alpha, max_alpha);
         beta = (float) Rand(6);
     
@@ -371,7 +374,7 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& img,
 
     if (smooth_filtering && Rand(2)) {
       int smooth_type = Rand(4);
-      int smooth_param = 3 + 2 * (Rand(1));
+      int smooth_param = min_smooth + Rand(max_smooth - min_smooth + 1);
       switch (smooth_type) {
           case 0:
               //cv::Smooth(cv_img, cv_img, smooth_type, smooth_param1);
