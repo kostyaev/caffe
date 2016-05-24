@@ -304,7 +304,7 @@ void rotate_crop(cv::Mat& img, int degrees){
     double sin_a = sin(angle);
     printf("sin: %f", sin_a);
     printf("sin abs: %f", sin_a);
-    sin_a = abs(sin_a)
+    sin_a = abs(sin_a);
     double cos_a = abs(cos(angle));
     printf("cos: %f", cos_a);
     double wr, hr = 0;
