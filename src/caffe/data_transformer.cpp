@@ -268,7 +268,7 @@ void resize(cv::Mat& cv_img, int smallest_side) {
     cv::resize(cv_img, cv_img, dsize);
 }
 
-void rotate_crop(Mat& img, int degrees){
+void rotate_crop(cv::Mat& img, int degrees){
     double angle = degrees * (PI / 180.0);
     int w = img.cols;
     int h = img.rows;
